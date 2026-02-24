@@ -1,7 +1,9 @@
 import "./Login.css";
 import { useState } from "react";
-import {userLogin} from "../../services/user-services.ts";
-import {useNavigate} from "react-router-dom";
+import { userLogin } from "../../services/user-services";
+import { AxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
+
 function Login() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -9,7 +11,8 @@ function Login() {
 
   const toRegister = () => {
     navigate("/register");
-  }
+  };
+
   const handleLogin = async () => {
     if (!email) {
       setError("Email is required !!!");
@@ -21,8 +24,9 @@ function Login() {
       if (response.status === 200) {
         navigate("/auth", { state: { email } });
       }
-    } catch (error) {
-      if (error.response && error.response.status === 404) {
+    } catch (error: unknown) {
+      const axiosError = error as AxiosError;
+      if (axiosError.response && axiosError.response.status === 404) {
         setError("User not found. Please sign up.");
       } else {
         setError("An error occurred during login. Please try again.");

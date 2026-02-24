@@ -22,11 +22,39 @@ export async function userLogin(email: string) {
     }
 }
 export async function userAuth(user: userAuthModel) {
+    try {
+        const response = await axios.post(
+            `${API_URL}user/auth`,
+            {user},
+            { withCredentials: true }
+        );
+
+        return response;
+    } catch (error) {
+        console.log("Error during user auth:", error);
+        throw error;
+    }
+}
+export async function getUserInfo(){
     try{
-        const response = await axios.post(`${API_URL}user/auth`, { user });
+        const response = await axios.get(`${API_URL}user/get-user-info`, {
+            withCredentials: true
+        });
         return response;
     }catch (error) {
-        console.log("Error during user auth:", error);
+        console.log("Error during getting user info:", error);
+        throw error;
+    }
+}
+export async function userLogout() {
+    try {
+        const response = await axios.post(
+            `${API_URL}user/log-out`,{},
+            { withCredentials: true }
+        );
+        return response;
+    } catch (error) {
+        console.log("Error during user log out:", error);
         throw error;
     }
 }
