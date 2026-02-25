@@ -1,25 +1,24 @@
-.board-bg{
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: antiquewhite;
+
+.board-bg {
     height: 100vh;
-    margin: 0;
-    padding: 0;
-    width: 100%;
+    display: flex;
+    flex-direction: column;
 }
-.top-pane{
-    float: left;
-    width: 100%;
-    min-height: 5vh;
-    background-color: chocolate;
+
+.top-pane {
+    height: fit-content;
+    background: #333;
+    color: white;
+
 }
 .user-pane{
-    padding: 10px;
-    width: fit-content;
+    padding: 3px;
     background-color: blueviolet;
     float: right;
     min-height: 5vh;
-    height: fit-content;
     display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .user-name{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -30,35 +29,95 @@
     height: 5vh;
     width: 5vh;
 }
-.left-pane{
-    float: left;
-    width: 15%;
-    background-color: aqua;
-    text-align: center;
-}
-.member{
-    align-items: center;
+.logoutBtn{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 1em;
+    font-weight: bold;
     height: fit-content;
-    background-color: blueviolet;
+}
+.middle-pane {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+.left-pane {
+    width: 15vw;
+    background: #eee;
     display: flex;
     flex-direction: column;
 }
-.member-item{
-    margin: 10px;
-    width: 80%;
-    background-color: brown;
+.left-pane h3 {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0056b3;
+    height: 5vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
 }
-.right-pane{
-    float: left;
-    width: 85%;
-    background-color: cornflowerblue;
+.board{
+    background-color: blueviolet;
+    overflow-y: scroll;
 
 }
 
 .board-item{
-    float: left;
-    margin: 20px;
-    background-color: chartreuse;
+    margin: 10px;
+    width: 90%;
+    background-color: brown;
     height: 10vh;
-    width: 11vw;
+    min-height: fit-content;
 }
+.board-item:hover{
+    cursor: pointer;
+}
+.right-pane {
+    flex: 1;
+    background: #fff;
+    white-space: nowrap;
+    overflow-x: auto;
+}
+.create-card{
+    border-radius: 10px;
+    margin: 1%;
+    background-color: chartreuse;
+    display: inline-block;
+    height: 10vh;
+    width: 10vw;
+    min-width: fit-content;
+    min-height: fit-content;
+    text-align: center;
+}
+.card-item{
+    border-radius: 10px;
+    overflow-y: scroll;
+    margin-left: 10px;
+    margin-top: 1%;
+    background-color: chartreuse;
+    display: inline-block;
+    vertical-align: top;
+    height: 98%;
+    width: 20vw;
+    text-align: center;
+}
+.create-task{
+    border-radius: 10px;
+    margin: 1%;
+    background-color: #007bff;
+    display: inline-block;
+    height: 10vh;
+    width: 10vw;
+    text-align: center;
+}
+.task-item{
+    border-radius: 10px;
+    margin: 10px;
+    background-color: brown;
+    height: fit-content;
+}
+.task-item p{
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+

@@ -1,11 +1,11 @@
 import axios from "axios";
 import {userAuthModel, userRegisterModel} from "../models/user-models";
 
-const API_URL = "http://localhost:3001/";
+const API_URL = "http://localhost:3001/user";
 
 export async function userRegister(user :userRegisterModel) {
     try {
-        const response = await axios.post(`${API_URL}user/register`, { user });
+        const response = await axios.post(`${API_URL}/register`, { user });
         return response;
     } catch (error) {
         console.error("Error during user register:", error);
@@ -14,7 +14,7 @@ export async function userRegister(user :userRegisterModel) {
 }
 export async function userLogin(email: string) {
     try {
-        const response = await axios.post(`${API_URL}user/login`, { email });
+        const response = await axios.post(`${API_URL}/login`, { email });
         return response;
     } catch (error) {
         console.error("Error during user login:", error);
@@ -24,7 +24,7 @@ export async function userLogin(email: string) {
 export async function userAuth(user: userAuthModel) {
     try {
         const response = await axios.post(
-            `${API_URL}user/auth`,
+            `${API_URL}/auth`,
             {user},
             { withCredentials: true }
         );
@@ -37,7 +37,7 @@ export async function userAuth(user: userAuthModel) {
 }
 export async function getUserInfo(){
     try{
-        const response = await axios.get(`${API_URL}user/get-user-info`, {
+        const response = await axios.get(`${API_URL}/get-user-info`, {
             withCredentials: true
         });
         return response;
@@ -49,7 +49,7 @@ export async function getUserInfo(){
 export async function userLogout() {
     try {
         const response = await axios.post(
-            `${API_URL}user/log-out`,{},
+            `${API_URL}/log-out`,{},
             { withCredentials: true }
         );
         return response;
