@@ -1,221 +1,449 @@
 import "./Board.css";
-import { useEffect, useState } from "react";
-import { userInfoModel } from "../../models/user-models";
-import { getUserInfo, userLogout } from "../../services/user-services";
-import { useNavigate } from "react-router-dom";
-import { boardCreateModel, boardInfoModel } from "../../models/board-models";
+import {useEffect, useState} from "react";
+import {assigneeModel, userInfoModel, usersData} from "../../models/user-models";
+import {getUserInfo, getUsers, userLogout} from "../../services/user-services";
+import {useNavigate} from "react-router-dom";
+import {boardCreateModel, boardInfoModel} from "../../models/board-models";
 import {createBoard, deleteBoard, getBoards} from "../../services/board-services";
 import {createCard, deleteCard, getCards} from "../../services/card-services";
 import {cardInfoModel, cardCreateModel} from "../../models/card-models";
+import {taskCreateModel, taskInfoModel} from "../../models/task-models";
+import {createTask, deleteTask, getTasks} from "../../services/task-services";
 
 function Board() {
-  const [user, setUser] = useState<userInfoModel | null>(null);
-  const [boards, setBoards] = useState<boardInfoModel[]>([]);
-  const [cards, setCard] = useState<cardInfoModel[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [boardName, setBoardName] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [cardDescription, setCardDescription] = useState("");
-  const [boardNameErr, setBoardNameErr] = useState("err");
-  const [cardNameErr, setCardNameErr] = useState("err");
-  const [selectedBoardId, setSelectedBoardId] = useState("err");
+    const navigate = useNavigate();
+    const [user, setUser] = useState<userInfoModel | null>(null);
+    const [boards, setBoards] = useState<boardInfoModel[]>([]);
+    const [cards, setCard] = useState<cardInfoModel[]>([]);
+    const [tasks, setTask] = useState<taskInfoModel[]>([]);
 
-  const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [boardName, setBoardName] = useState("");
+    const [cardName, setCardName] = useState("");
+    const [cardDescription, setCardDescription] = useState("");
+    const [boardNameErr, setBoardNameErr] = useState("err");
+    const [cardNameErr, setCardNameErr] = useState("err");
+    const [selectedBoardId, setSelectedBoardId] = useState("");
+    const [selectedCardId, setSelectedCardId] = useState("");
+    const [cardsWithTasks, setCardsWithTasks] = useState<{card: cardInfoModel, tasks: taskInfoModel[]}[]>([]);
 
-  const createNewBoard = async () => {
-    if (boardName === "") {
-      setBoardNameErr("Please enter board name!");
-      return;
-    }
-    setBoardNameErr("");
-    try {
-      const newBoard: boardCreateModel = {
-        board: {
-          boardName,
+    const [currentCard, setCurrentCard] = useState("");
+    const [selectedItems, setSelectedItems] = useState<string[]>([]);
+    const [userCollection, setUserCollection] = useState<usersData | null>(null);
+    const [title, setTitle] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
+    const [dueDate, setDueDate] = useState<string>('');
+    const [startDate, setStartDate] = useState<string>('');
+    const [createDate, setCreateDate] = useState<string>(new Date().toISOString());
+    const [memberIds, setMemberIds] = useState<string[]>([]);
+    const [isComplete, setIsComplete] = useState<boolean>(false);
+    const [assignees, setAssignees] = useState<assigneeModel[]>([]);
+
+
+
+    const createNewBoard = async () => {
+        if (boardName === "") {
+            setBoardNameErr("Please enter board name!");
+            return;
         }
-      }
-      const response = await createBoard(newBoard);
-      if (response.status === 201) {
-        setBoardName("");
-        setBoardNameErr("Successfully created board!");
-        fetchBoards();
-      }
-    } catch (error) {
-      setBoardNameErr("Something went wrong!");
-    }
-  }
-  const createNewCard = async (boardID: string, ) => {
-    if (cardName === "") {
-      setCardNameErr("Please enter card name!");
-      return;
-    }
-    setCardNameErr("");
-    try {
-      const newCard: cardCreateModel = {
-        card: {
-          boardID: boardID,
-          cardTitle : cardName,
-          cardDescription: cardDescription
+        setBoardNameErr("");
+        try {
+            const newBoard: boardCreateModel = {
+                board: {
+                    boardName,
+                }
+            }
+            const response = await createBoard(newBoard);
+            if (response.status === 201) {
+                setBoardName("");
+                setBoardNameErr("Successfully created board!");
+                fetchBoards();
+            }
+        } catch (error) {
+            setBoardNameErr("Something went wrong!");
         }
-      }
-      const response = await createCard(newCard);
-      if (response.status === 201) {
-        setCardName("");
-        setCardDescription("");
-        setCardNameErr("Successfully created board!");
-        fetchCards(boardID);
-      }
-    } catch (error) {
-      setCardNameErr("Something went wrong!");
     }
-  }
-  const removeBoard = async (boardId: string) => {
-    try{
-      const response = await deleteBoard(boardId);
-      if (response.status === 200) {
-        fetchBoards();
-      }
-    }catch(error){
-      console.log(error);
+    const createNewCard = async (boardID: string,) => {
+        if (cardName === "") {
+            setCardNameErr("Please enter card name!");
+            return;
+        }
+        setCardNameErr("");
+        try {
+            const newCard: cardCreateModel = {
+                card: {
+                    boardID: boardID,
+                    cardTitle: cardName,
+                    cardDescription: cardDescription
+                }
+            }
+            const response = await createCard(newCard);
+            if (response.status === 201) {
+                setCardName("");
+                setCardDescription("");
+                setCardNameErr("Successfully created board!");
+                fetchCards(boardID);
+            }
+        } catch (error) {
+            setCardNameErr("Something went wrong!");
+        }
     }
-  }
-  const removeCard = async (cardId: string) => {
-    try{
-      const response = await deleteCard(cardId);
-      if (response.status === 200) {
-        fetchCards(selectedBoardId);
-      }
-    }catch(error){
-      console.log(error);
+    const createNewTask = async (cardID: string) => {
+        try {
+            const newTask: taskCreateModel = {
+                cardId: cardID,
+                title: title,
+                description: description,
+                dueDate: dueDate,
+                startDate: startDate,
+                createDate: createDate,
+                memberIds: memberIds,
+                isComplete: isComplete,
+            }
+            const response = await createTask(newTask);
+            if (response.status === 201) {
+                setTitle("");
+                setDescription("");
+                setDueDate("");
+                setStartDate("");
+                setMemberIds([]);
+                setAssignees([]);
+
+                // Refresh tasks for the specific card
+                await fetchCards(selectedBoardId); // This will refresh all cards and their tasks
+            }
+        } catch (error) {
+            setCardNameErr("Something went wrong!");
+        }
     }
-  }
-  const fetchUserData = async () => {
-    try {
-      const response = await getUserInfo();
-      setUser(response.data);
-
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
+    const removeBoard = async (boardId: string) => {
+        try {
+            const response = await deleteBoard(boardId);
+            if (response.status === 200) {
+                fetchBoards();
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
-  };
-  const fetchBoards = async () => {
-    try {
-      const response = await getBoards();
-      setBoards(response.data);
-      if(response.data.length > 0) {
-        await fetchCards(response.data[0].boardID);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
+    const removeCard = async (cardId: string) => {
+        try {
+            const response = await deleteCard(cardId);
+            if (response.status === 200) {
+               await fetchCards(selectedBoardId);
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
-  }
-  const fetchCards = async (boardId:string) => {
-    try {
-      const response = await getCards(boardId);
-      setCard(response.data);
-      setSelectedBoardId(boardId)
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
+    const removeTask = async (taskId: string) => {
+        try {
+            const response = await deleteTask(taskId);
+            if (response.status === 200) {
+                await fetchCards(selectedBoardId);
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
-  }
-  useEffect(() => {
+    const fetchUserData = async () => {
+        try {
+            const response = await getUserInfo();
+            setUser(response.data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const fetchBoards = async () => {
+        try {
+            const response = await getBoards();
+            setBoards(response.data);
+            setSelectedBoardId(response.data[0].boardID);
+            if (response.data.length > 0) {
+                await fetchCards(response.data[0].boardID);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };const fetchCards = async (boardId: string) => {
+        try {
+            const response = await getCards(boardId);
+            const cardsData = response.data;
+            setSelectedBoardId(boardId);
 
-    fetchBoards()
-    fetchUserData();
+            // Fetch tasks for each card and combine them
+            const cardsWithTasksData = await Promise.all(
+                cardsData.map(async (card: cardInfoModel) => {
+                    try {
+                        const taskResponse = await getTasks(card.cardID);
+                        return {
+                            card: card,
+                            tasks: taskResponse.data || []
+                        };
+                    } catch (error) {
+                        console.log(`Error fetching tasks for card ${card.cardID}:`, error);
+                        return {
+                            card: card,
+                            tasks: []
+                        };
+                    }
+                })
+            );
 
-  }, []);
+            setCardsWithTasks(cardsWithTasksData);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const fetchTasks = async (cardId: string) => {
+        try {
+            const response = await getTasks(cardId);
+            setTask(response.data);
+            setSelectedCardId(cardId);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
-  if (loading) return <p>Loading...</p>;
-  if (!user) return <p>Not logged in</p>;
+    const fetchUsers = async () => {
+        try {
+            const response = await getUsers();
+            setUserCollection(response.data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    const userArray = userCollection ? Object.values(userCollection.users) : [];
 
-  const handleLogout = async () => {
-    try {
-      const response = await userLogout();
-      if (response.status === 200) {
-        navigate("/auth");
-      }
-    } catch (error) {
-      console.log(error);
+    const addAssignee = (assigneeID: string) => {
+        if (!assigneeID || assigneeID === "") return;
+
+        if (assignees.some(a => a.id === assigneeID)) return;
+
+        let selectedUser = userArray.find((user) => user.id === assigneeID);
+        if (selectedUser) {
+            const assignee = {
+                id: assigneeID,
+                name: selectedUser.name,
+            };
+            setAssignees(prev => [...prev, assignee]);
+            setMemberIds(prev => [...prev, assignee.id]);
+        }
+    };
+
+    const removeAssignee = (assigneeID: string) => {
+        setAssignees(prev => prev.filter(assignee => assignee.id !== assigneeID));
+        setMemberIds(prev => prev.filter(assignee => assignee !== assigneeID));
+    };
+
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true); // Set loading once at the beginning
+
+            try {
+                // Fetch user and boards in parallel for better performance
+                await Promise.all([
+                    fetchUserData(),
+                    fetchBoards(),
+                    fetchUsers()
+                ]);
+            } catch (error) {
+                console.log(error);
+            } finally {
+                setLoading(false); // Set loading false once at the end
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) return <p>Loading...</p>;
+    if (!user) return <p>Not logged in</p>;
+
+
+    const handleLogout = async () => {
+        try {
+            const response = await userLogout();
+            if (response.status === 200) {
+                navigate("/auth");
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
-  }
 
-  return (
-      <div className="board-bg">
-        <div className="top-pane">
-          <div className="user-pane">
-            <p className="user-name">{user.name}</p>
-            <img className="user-pane-img" src={"src/assets/avatar.png"} alt="avatar" />
-            <button className="logoutBtn" onClick={handleLogout}>Log out</button>
-          </div>
-        </div>
-        <div className="middle-pane">
-          <div className="left-pane">
-            <div><h3>{user.name} Workspace</h3></div>
-            <div className="board">
-              {boards?.map((board, i) => (
-                  <div key={i} className="board-item" onClick={()=> fetchCards(board.boardID)}>
-                    <p>{board.boardName}</p>
-                    <button onClick={() => removeBoard(board.boardID)}>X</button>
-                  </div>
-
-              ))}
-              <div className="board-item">
-                <p>{boardNameErr}</p>
-                <input
-                    type="text"
-                    value={boardName}
-                    onChange={(e) => setBoardName(e.target.value)}
-                    placeholder="Enter board name"
-                />
-                <button onClick={createNewBoard}>Add</button>
-              </div>
+    return (
+        <div className="board-bg">
+            <div className="top-pane">
+                <div className="user-pane">
+                    <p className="user-name">{user.name}</p>
+                    <img className="user-pane-img" src={"src/assets/avatar.png"} alt="avatar"/>
+                    <button className="logoutBtn" onClick={handleLogout}>Log out</button>
+                </div>
             </div>
-          </div>
+            <div className="middle-pane">
+                <div className="left-pane">
+                    <div><h3>{user.name} Workspace</h3></div>
+                    <div className="board">
+                        {boards?.map((board, i) => (
+                            <div
+                                key={i}
+                                className={`board-item ${board.boardID === selectedBoardId ? 'selected' : ''}`}
+                                onClick={() => fetchCards(board.boardID)}
+                            >
+                                <p>{board.boardName}</p>
+                                <button onClick={() => removeBoard(board.boardID)}>X</button>
+                            </div>
+                        ))}
+                        <div className="board-item">
+                            <p>{boardNameErr}</p>
+                            <input
+                                type="text"
+                                value={boardName}
+                                onChange={(e) => setBoardName(e.target.value)}
+                                placeholder="Enter board name"
+                            />
+                            <button onClick={createNewBoard}>Add</button>
+                        </div>
+                    </div>
+                </div>
 
-          <div className="right-pane">
-            <div className="create-card">
-              <p>{cardNameErr}</p>
-              <input type={"text"}
-                     value={cardName}
-                     onChange={(e) => setCardName(e.target.value)}
-                     placeholder="Enter card name" /><br/>
-              <input type={"text"}
-                     value={cardDescription}
-                     onChange={(e) => setCardDescription(e.target.value)}
-                     placeholder="Enter Description" /><br/>
+                <div className="right-pane">
+                    <div className="create-card">
+                        <p>{cardNameErr}</p>
+                        <input type={"text"}
+                               value={cardName}
+                               onChange={(e) => setCardName(e.target.value)}
+                               placeholder="Enter card name"/><br/>
+                        <input type={"text"}
+                               value={cardDescription}
+                               onChange={(e) => setCardDescription(e.target.value)}
+                               placeholder="Enter Description"/><br/>
 
-              <button onClick={()=> createNewCard(selectedBoardId)}>Add</button>
-            </div>
-            <>{cards?.map((card, i) => (
-                <div key={i} className="card-item">
-                  <button onClick={()=> removeCard(card.cardID)}>X</button>
-                  <p>{card.cardTitle}</p>
-                  <p>{card.cardDescription}</p>
-                  <>
-                    {Array.from({ length: 8 }).map((_, j) => (
-                        <div key={j} className="task-item">
-                          <p>Task {j + 1}</p>
-                          <p>To do {j + 1}</p>
-                          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-                            ut labore et dolore magna aliqua. Ut enim ad minim veniam.</p>
+                        <button onClick={() => createNewCard(selectedBoardId)}>Add</button>
+                    </div>
+                    <>{cardsWithTasks?.map((cardWithTasks, i) => (
+                        <div key={i} className="card-item">
+                            <button onClick={() => removeCard(cardWithTasks.card.cardID)}>X</button>
+                            <p>{cardWithTasks.card.cardTitle}</p>
+                            <p>{cardWithTasks.card.cardDescription}</p>
+                            {cardWithTasks.tasks.map((task, j) => (
+                                <div className="task-item" key={j}>
+                                    <div>
+                                        <button type="button" onClick={event => removeTask(task.taskId)}>X</button>
+                                    </div>
+                                    <div>
+                                        <h3>{task.title}</h3>
+                                    </div>
+                                    <p>{task.description}</p>
+                                    <div>
+                                        <span>Start: {task.startDate}</span>
+                                        <span>Due: {task.dueDate}</span>
+                                    </div>
+                                    <div>
+                                        <strong>Assigned to:</strong>
+                                        {task.memberIds?.map((member, k) => (
+                                            <span key={k}>{member}</span>
+                                        ))}
+                                    </div>
+                                    <div>
+                                        <span>Status: {task.isComplete ? 'Complete' : 'Pending'}</span>
+                                    </div>
+                                </div>
+                            ))}
+                            {currentCard === cardWithTasks.card.cardID ? (
+                                <div id="cardFormContainer" className="task-item">
+                                    <h2 id="formHeading">Create New Card</h2>
+                                    <form id="cardForm">
+                                        <div>
+                                            <input
+                                                type="text"
+                                                id="title"
+                                                onChange={(e) => setTitle(e.target.value)}
+                                                placeholder="Enter card title*"
+                                                required/>
+                                        </div>
+
+                                        <div>
+                                            <textarea
+                                                id="description"
+                                                onChange={(e) => setDescription(e.target.value)}
+                                                placeholder="Enter detailed description"></textarea>
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor="startDate">Start Date</label><br/>
+                                            <input
+                                                type="datetime-local"
+                                                id="startDate"
+                                                onChange={(e) => setStartDate(e.currentTarget.value)} />
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor="dueDate">Due Date</label><br/>
+                                            <input
+                                                type="datetime-local"
+                                                id="dueDate"
+                                                onChange={(e) => setDueDate(e.currentTarget.value)}
+                                                min={startDate}/>
+                                        </div>
+
+
+                                        <div>
+                                            <label>Assigned to: </label><br/>
+                                            <select onChange={(e) => addAssignee(e.target.value)}>
+                                                <option value="">-Select-</option>
+                                                {userArray.map((item, index) => (
+                                                    <option key={index} value={item.id}>{item.name}</option>
+                                                ))}
+                                            </select>
+
+                                            <div>
+                                                {assignees.length > 0 ? (
+                                                    <p>
+                                                        {assignees.map((item , i) => (
+                                                            <span key={i}>
+                                                            {item.name}
+                                                                {i < selectedItems.length - 1 ? ', ' : '.'}
+                                                                <button type="button" onClick={e => removeAssignee(item.id)}>X</button>
+                                                         </span>
+
+                                                        ))}
+                                                    </p>
+
+                                                ) : (
+                                                    <p>No items selected</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+
+                                        <div>
+                                            <input type="checkbox" id="isComplete" onChange={(e) => setIsComplete(e.target.checked)} />
+                                            <label htmlFor="isComplete">Mark as Complete</label>
+                                        </div>
+
+                                        <div>
+                                            <button type="button" onClick={event => setCurrentCard("")}>Cancel</button>
+                                            <button
+                                                type="button"
+                                                id="saveBtn"
+                                                onClick={event => createNewTask( cardWithTasks.card.cardID)}>Save Card</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            ) : (
+                                <div>
+                                    <button onClick={event => setCurrentCard(cardWithTasks.card.cardID)}> Add</button>
+                                </div>
+                            )}
                         </div>
                     ))}
-                  </>
-                  <div className="task-item"><button className="create-task">Add new task</button></div>
-                </div>
-                ))}
-            </>
+                    </>
 
-          </div>
+                </div>
+            </div>
         </div>
-      </div>
-  );
+    );
 }
 
 export default Board;

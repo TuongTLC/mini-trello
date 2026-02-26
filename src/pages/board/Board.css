@@ -72,6 +72,15 @@
 .board-item:hover{
     cursor: pointer;
 }
+.board-item.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #0056b3;
+}
+
+.board-item.selected p {
+    color: white;
+}
 .right-pane {
     flex: 1;
     background: #fff;
@@ -98,23 +107,18 @@
     display: inline-block;
     vertical-align: top;
     height: 98%;
+    /*max-height: 98%;;*/
+    /*min-width: fit-content;*/
     width: 20vw;
     text-align: center;
 }
-.create-task{
-    border-radius: 10px;
-    margin: 1%;
-    background-color: #007bff;
-    display: inline-block;
-    height: 10vh;
-    width: 10vw;
-    text-align: center;
-}
+
 .task-item{
     border-radius: 10px;
     margin: 10px;
     background-color: brown;
     height: fit-content;
+
 }
 .task-item p{
     white-space: normal;

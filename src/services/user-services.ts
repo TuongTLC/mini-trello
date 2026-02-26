@@ -58,3 +58,14 @@ export async function userLogout() {
         throw error;
     }
 }
+export async function getUsers(){
+    try{
+        const response = await axios.get(`${API_URL}/get-users`, {
+            withCredentials: true
+        });
+        return response;
+    }catch (error) {
+        console.log("Error during getting users :", error);
+        throw error;
+    }
+}

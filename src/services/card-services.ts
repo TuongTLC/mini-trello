@@ -1,5 +1,4 @@
 import axios from "axios";
-import { boardCreateModel, boardInfoModel} from "../models/board-models";
 import {cardCreateModel} from "../models/card-models";
 const API_URL = "http://localhost:3001/card";
 

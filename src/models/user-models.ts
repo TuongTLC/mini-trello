@@ -13,3 +13,21 @@ export interface userInfoModel {
     email: string;
     position: string;
 }
+export interface user {
+    email: string;
+    id: string;
+    name: string;
+    position: string;
+}
+
+export interface usersCollection {
+    [userId: string]: user;
+}
+
+export interface usersData {
+    users: usersCollection;
+}
+export interface assigneeModel {
+    id: string;
+    name: string;
+}

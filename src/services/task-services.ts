@@ -1,0 +1,38 @@
+import axios from "axios";
+import {taskCreateModel} from "../models/task-models";
+const API_URL = "http://localhost:3001/task";
+
+export async function getTasks(cardID: string){
+    try{
+        const response = await axios.get(`${API_URL}/tasks?cardId=${cardID}`, { withCredentials: true });
+        return response;
+    } catch(error){
+        console.error("Error getting tasks:" + error);
+        throw error;
+    }
+}
+export async function createTask(newTaskModel: taskCreateModel){
+    try{
+        console.log(newTaskModel);
+        const response = await axios.post(`${API_URL}/create-task`,
+            newTaskModel,
+            {
+                withCredentials: true
+            }
+        );
+        return response;
+    }catch(error){
+        console.error("Error creating task:",error);
+        throw error;
+    }
+}
+export async function deleteTask(taskID:string){
+    try{
+        const response = await axios.delete(`${API_URL}/delete-task?taskId=${taskID}`, { withCredentials: true });
+        return response;
+    }catch(error){
+        console.error("Error deleting task:",error);
+        throw error;
+    }
+
+}
