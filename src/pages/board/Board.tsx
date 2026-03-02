@@ -21,8 +21,8 @@ function Board() {
     const [boardName, setBoardName] = useState("");
     const [cardName, setCardName] = useState("");
     const [cardDescription, setCardDescription] = useState("");
-    const [boardNameErr, setBoardNameErr] = useState("err");
-    const [cardNameErr, setCardNameErr] = useState("err");
+    const [boardNameErr, setBoardNameErr] = useState("Add new board");
+    const [cardNameErr, setCardNameErr] = useState("Add new card");
     const [selectedBoardId, setSelectedBoardId] = useState("");
     const [selectedCardId, setSelectedCardId] = useState("");
     const [cardsWithTasks, setCardsWithTasks] = useState<{card: cardInfoModel, tasks: taskInfoModel[]}[]>([]);
@@ -56,7 +56,7 @@ function Board() {
             const response = await createBoard(newBoard);
             if (response.status === 201) {
                 setBoardName("");
-                setBoardNameErr("Successfully created board!");
+                setBoardNameErr("Add new board");
                 fetchBoards();
             }
         } catch (error) {
@@ -81,7 +81,7 @@ function Board() {
             if (response.status === 201) {
                 setCardName("");
                 setCardDescription("");
-                setCardNameErr("Successfully created board!");
+                setCardNameErr("Add new card");
                 fetchCards(boardID);
             }
         } catch (error) {
@@ -114,7 +114,6 @@ function Board() {
                 await fetchCards(selectedBoardId);
             }
         } catch (error) {
-            setCardNameErr("Something went wrong!");
         }
     }
     const removeBoard = async (boardId: string) => {
@@ -236,16 +235,11 @@ function Board() {
         setAssignees(prev => prev.filter(assignee => assignee.id !== assigneeID));
         setMemberIds(prev => prev.filter(assignee => assignee !== assigneeID));
     };
-    const tokenCheck = async () => {
-        try{
-            const response = await verifyToken();
-            if (response.status === 401) {
-                navigate("/")
-            }
-            return;
-        }catch(error: unknown) {
-            console.error("Verify token failed:", error);
-        }
+    const convertTime = (dateStr: string) => {
+        const date = new Date(dateStr);
+
+        return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")} ` +
+            `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
     }
     useEffect(() => {
         const fetchData = async () => {
@@ -294,6 +288,9 @@ function Board() {
     return (
         <div className="board-bg">
             <div className="top-pane">
+                <div className="main-title">
+                    <p>Mini Trello</p>
+                </div>
                 <div className="user-pane">
                     <p className="user-name">{user.name}</p>
                     <img className="user-pane-img" src={"src/assets/avatar.png"} alt="avatar"/>
@@ -302,7 +299,7 @@ function Board() {
             </div>
             <div className="middle-pane">
                 <div className="left-pane">
-                    <div><h3>{user.name} Workspace</h3></div>
+                    <div ><h3>{user.name} Workspace</h3></div>
                     <div className="board">
                         {boards?.map((board, i) => (
                             <div
@@ -320,7 +317,7 @@ function Board() {
                                 type="text"
                                 value={boardName}
                                 onChange={(e) => setBoardName(e.target.value)}
-                                placeholder="Enter board name"
+                                placeholder="Enter board name..."
                             />
                             <button onClick={createNewBoard}>Add</button>
                         </div>
@@ -332,11 +329,12 @@ function Board() {
                         <input type={"text"}
                                value={cardName}
                                onChange={(e) => setCardName(e.target.value)}
-                               placeholder="Enter card name"/><br/>
-                        <input type={"text"}
+                               placeholder="Enter card name..."/><br/>
+                        <textarea
+                            rows={2}
                                value={cardDescription}
                                onChange={(e) => setCardDescription(e.target.value)}
-                               placeholder="Enter Description"/><br/>
+                               placeholder="Enter description..."/><br/>
 
                         <button onClick={() => createNewCard(selectedBoardId)}>Add</button>
                     </div>
@@ -357,24 +355,26 @@ function Board() {
                                     </div>
                                     <p>{task.description}</p>
                                     <div>
-                                        <p>Start: {task.startDate}</p>
-                                        <p>Due: {task.dueDate}</p>
+                                        <strong>Start:</strong>
+                                        <p> {convertTime(task.startDate)}</p>
+                                        <strong>Due:</strong>
+                                        <p> {convertTime(task.dueDate)}</p>
                                     </div>
                                     <div>
                                         <strong>Assigned to:</strong>
-                                        {task.memberIds?.map((member, k) => (
-                                            <p key={k}>{member}</p>
+                                        {Object.values(task.assignees || {}).map((member, k) => (
+                                            <p key={k}>{member.name}</p>
                                         ))}
                                     </div>
                                     <div>
-                                        <span>Status: {task.isComplete ? 'Complete' : 'Pending'}</span>
+                                        <strong>Status:</strong> {task.isComplete ? 'Complete' : 'Pending'}
                                     </div>
                                 </div>
                             ))}
                             {currentCard === cardWithTasks.card.cardID ? (
-                                <div id="cardFormContainer" className="task-item">
+                                <div id="task-form-container" className="task-item">
                                     <h2 id="formHeading">Create New Card</h2>
-                                    <form id="cardForm">
+                                    <form id="task-form">
                                         <div>
                                             <input
                                                 type="text"
@@ -394,22 +394,25 @@ function Board() {
                                         </div>
 
                                         <div>
-                                            <label htmlFor="startDate">Start Date</label><br/>
+                                            <label htmlFor="startDate">Start Date: </label>
                                             <input
                                                 type="datetime-local"
                                                 id="startDate"
                                                 onChange={(e) => setStartDate(e.currentTarget.value)}
-                                            value={startDate}/>
+                                                value={startDate}
+                                                className="icon-only-picker"
+                                            /><br/>
                                         </div>
 
                                         <div>
-                                            <label htmlFor="dueDate">Due Date</label><br/>
+                                            <label htmlFor="dueDate">Due Date: </label>
                                             <input
                                                 type="datetime-local"
                                                 id="dueDate"
                                                 onChange={(e) => setDueDate(e.currentTarget.value)}
                                                 min={startDate}
-                                                value={dueDate}/>
+                                                value={dueDate}
+                                                className="icon-only-picker"/><br/>
                                         </div>
 
 

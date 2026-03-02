@@ -16,6 +16,12 @@ export interface taskInfoModel{
     dueDate: string;
     startDate: string;
     createDate: string;
-    memberIds: string[];
+    assignees: {
+        [uuid: string]: Assignee;
+    };
     isComplete: boolean;
+}
+export interface Assignee {
+    uuid: string;
+    name: string;
 }
