@@ -35,6 +35,18 @@ export async function userAuth(user: userAuthModel) {
         throw error;
     }
 }
+export async function verifyToken() {
+    try {
+        const response = await axios.post(
+            `${API_URL}/verify-token`,{},
+            { withCredentials: true }
+        );
+        return response;
+    } catch (error) {
+        console.log("Error during token verify: ", error);
+        throw error;
+    }
+}
 export async function getUserInfo(){
     try{
         const response = await axios.get(`${API_URL}/get-user-info`, {

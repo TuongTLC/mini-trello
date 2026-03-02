@@ -1,6 +1,6 @@
 import "./Login.css";
-import { useState } from "react";
-import { userLogin } from "../../services/user-services";
+import {useEffect, useState} from "react";
+import {userLogin, verifyToken} from "../../services/user-services";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -8,11 +8,9 @@ function Login() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
   const toRegister = () => {
     navigate("/register");
   };
-
   const handleLogin = async () => {
     if (!email) {
       setError("Email is required !!!");
@@ -34,6 +32,20 @@ function Login() {
       console.error("Login failed:", error);
     }
   };
+  const tokenCheck = async () => {
+      try{
+        const response = await verifyToken();
+        if (response.status === 200) {
+          navigate("/board")
+        }
+        return;
+      }catch(error: unknown) {
+        console.error("Verify token failed:", error);
+      }
+  }
+  useEffect(() => {
+    tokenCheck();}
+  , []);
   return (
     <div className="login-page">
       <div className="login-container">

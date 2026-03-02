@@ -1,7 +1,7 @@
 import "./Board.css";
 import {useEffect, useState} from "react";
 import {assigneeModel, userInfoModel, usersData} from "../../models/user-models";
-import {getUserInfo, getUsers, userLogout} from "../../services/user-services";
+import {getUserInfo, getUsers, userLogout, verifyToken} from "../../services/user-services";
 import {useNavigate} from "react-router-dom";
 import {boardCreateModel, boardInfoModel} from "../../models/board-models";
 import {createBoard, deleteBoard, getBoards} from "../../services/board-services";
@@ -108,9 +108,10 @@ function Board() {
                 setStartDate("");
                 setMemberIds([]);
                 setAssignees([]);
+                setIsComplete(false);
+                setCurrentCard("");
 
-                // Refresh tasks for the specific card
-                await fetchCards(selectedBoardId); // This will refresh all cards and their tasks
+                await fetchCards(selectedBoardId);
             }
         } catch (error) {
             setCardNameErr("Something went wrong!");
@@ -235,24 +236,43 @@ function Board() {
         setAssignees(prev => prev.filter(assignee => assignee.id !== assigneeID));
         setMemberIds(prev => prev.filter(assignee => assignee !== assigneeID));
     };
-
+    const tokenCheck = async () => {
+        try{
+            const response = await verifyToken();
+            if (response.status === 401) {
+                navigate("/")
+            }
+            return;
+        }catch(error: unknown) {
+            console.error("Verify token failed:", error);
+        }
+    }
     useEffect(() => {
         const fetchData = async () => {
-            setLoading(true); // Set loading once at the beginning
+            setLoading(true);
 
             try {
-                // Fetch user and boards in parallel for better performance
+                const response = await verifyToken();
+
+                if (response.status === 401) {
+                    navigate("/");
+                    return;
+                }
+
                 await Promise.all([
                     fetchUserData(),
                     fetchBoards(),
                     fetchUsers()
                 ]);
+
             } catch (error) {
-                console.log(error);
+                console.error(error);
+                navigate("/");
             } finally {
-                setLoading(false); // Set loading false once at the end
+                setLoading(false);
             }
         };
+
         fetchData();
     }, []);
 
@@ -306,7 +326,6 @@ function Board() {
                         </div>
                     </div>
                 </div>
-
                 <div className="right-pane">
                     <div className="create-card">
                         <p>{cardNameErr}</p>
@@ -323,9 +342,11 @@ function Board() {
                     </div>
                     <>{cardsWithTasks?.map((cardWithTasks, i) => (
                         <div key={i} className="card-item">
-                            <button onClick={() => removeCard(cardWithTasks.card.cardID)}>X</button>
-                            <p>{cardWithTasks.card.cardTitle}</p>
-                            <p>{cardWithTasks.card.cardDescription}</p>
+                            <div className="card-title">
+                                <button onClick={() => removeCard(cardWithTasks.card.cardID)}>X</button>
+                                <p>{cardWithTasks.card.cardTitle}</p>
+                                <p>{cardWithTasks.card.cardDescription}</p>
+                            </div>
                             {cardWithTasks.tasks.map((task, j) => (
                                 <div className="task-item" key={j}>
                                     <div>
@@ -336,13 +357,13 @@ function Board() {
                                     </div>
                                     <p>{task.description}</p>
                                     <div>
-                                        <span>Start: {task.startDate}</span>
-                                        <span>Due: {task.dueDate}</span>
+                                        <p>Start: {task.startDate}</p>
+                                        <p>Due: {task.dueDate}</p>
                                     </div>
                                     <div>
                                         <strong>Assigned to:</strong>
                                         {task.memberIds?.map((member, k) => (
-                                            <span key={k}>{member}</span>
+                                            <p key={k}>{member}</p>
                                         ))}
                                     </div>
                                     <div>
@@ -359,7 +380,8 @@ function Board() {
                                                 type="text"
                                                 id="title"
                                                 onChange={(e) => setTitle(e.target.value)}
-                                                placeholder="Enter card title*"
+                                                placeholder="Enter task title*"
+                                                value={title}
                                                 required/>
                                         </div>
 
@@ -367,7 +389,8 @@ function Board() {
                                             <textarea
                                                 id="description"
                                                 onChange={(e) => setDescription(e.target.value)}
-                                                placeholder="Enter detailed description"></textarea>
+                                                placeholder="Enter detailed description"
+                                                value={description}></textarea>
                                         </div>
 
                                         <div>
@@ -375,7 +398,8 @@ function Board() {
                                             <input
                                                 type="datetime-local"
                                                 id="startDate"
-                                                onChange={(e) => setStartDate(e.currentTarget.value)} />
+                                                onChange={(e) => setStartDate(e.currentTarget.value)}
+                                            value={startDate}/>
                                         </div>
 
                                         <div>
@@ -384,7 +408,8 @@ function Board() {
                                                 type="datetime-local"
                                                 id="dueDate"
                                                 onChange={(e) => setDueDate(e.currentTarget.value)}
-                                                min={startDate}/>
+                                                min={startDate}
+                                                value={dueDate}/>
                                         </div>
 
 
@@ -418,12 +443,12 @@ function Board() {
 
 
                                         <div>
-                                            <input type="checkbox" id="isComplete" onChange={(e) => setIsComplete(e.target.checked)} />
+                                            <input type="checkbox" checked={isComplete} id="isComplete" onChange={(e) => setIsComplete(e.target.checked)} />
                                             <label htmlFor="isComplete">Mark as Complete</label>
                                         </div>
 
                                         <div>
-                                            <button type="button" onClick={event => setCurrentCard("")}>Cancel</button>
+                                            <button type="button" id="closeTaskCreate" onClick={event => setCurrentCard("")}>Close</button>
                                             <button
                                                 type="button"
                                                 id="saveBtn"

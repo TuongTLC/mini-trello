@@ -59,9 +59,10 @@
 .board{
     background-color: blueviolet;
     overflow-y: scroll;
-
 }
-
+.board::-webkit-scrollbar {
+    display: none;
+}
 .board-item{
     margin: 10px;
     width: 90%;
@@ -112,7 +113,15 @@
     width: 20vw;
     text-align: center;
 }
-
+.card-item::-webkit-scrollbar{
+    display: none;
+}
+.card-title{
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: coral;
+}
 .task-item{
     border-radius: 10px;
     margin: 10px;
@@ -120,6 +129,7 @@
     height: fit-content;
 
 }
+
 .task-item p{
     white-space: normal;
     overflow-wrap: anywhere;
