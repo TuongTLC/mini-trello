@@ -1,5 +1,5 @@
 import axios from "axios";
-import {taskCreateModel} from "../models/task-models";
+import {taskCreateModel, taskUpdateModel} from "../models/task-models";
 const API_URL = "http://localhost:3001/task";
 
 export async function getTasks(cardID: string){
@@ -35,4 +35,16 @@ export async function deleteTask(taskID:string){
         throw error;
     }
 
+}
+export async function updateTask(taskData: taskUpdateModel) {
+    try {
+        const response = await axios.put(`${API_URL}/update-task`,
+            { task: taskData },
+            { withCredentials: true }
+        );
+        return response;
+    } catch (error) {
+        console.error("Error updating task:", error);
+        throw error;
+    }
 }

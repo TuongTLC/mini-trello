@@ -10,4 +10,7 @@ export interface boardCreateModel{
 export interface boardModel{
     boardName: string;
 }
-export const boardUpdateModel = {}
+export interface boardUpdateModel {
+    boardID: string;
+    boardName: string;
+}

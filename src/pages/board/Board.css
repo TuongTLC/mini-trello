@@ -58,7 +58,7 @@
 
 .left-pane {
     width: 15vw;
-    background: #eee;
+    background: cornflowerblue;
     display: flex;
     flex-direction: column;
 }
@@ -73,7 +73,7 @@
     margin: 0;
 }
 .board{
-    background-color: #eee;
+    background-color: cornflowerblue;
     overflow-y: scroll;
     display: grid;
     place-items: center;
@@ -104,13 +104,19 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
     margin: 10px;
-    background-color: cornflowerblue;
-    color: white;
+    background-color: white;
     border-radius: 5px;
 }
 
 .board-item.selected p {
-    color: white;
+    color: black;
+}
+.board-item.selected input{
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: fit-content;
+    text-align: center;
+    margin: 10px;
+
 }
 .board-item input{
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -126,7 +132,7 @@
 
 .right-pane {
     flex: 1;
-    background: #fff;
+    background: lightsteelblue;
     white-space: nowrap;
     overflow-x: auto;
 }

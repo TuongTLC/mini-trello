@@ -1,6 +1,6 @@
 .auth-page {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: antiquewhite;
+    background-color: #ccc;
     height: 100vh;
     margin: 0;
     padding: 0;
@@ -10,11 +10,12 @@
 }
 
 .auth-container {
-    background-color: #fff;
+    background-color: #007bff;
     padding: 40px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
+    color: white;
 }
 
 .auth-container input {
@@ -27,8 +28,9 @@
 .auth-container button {
     margin-top: 10px;
     padding: 5px 10px;
-    background-color: #007bff;
+    background-color: #fff;
     border: none;
     border-radius: 5px;
-    color: white;
+    color: black;
+    font-weight: bold;
 }

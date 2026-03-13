@@ -1,5 +1,5 @@
 import axios from "axios";
-import { boardCreateModel, boardInfoModel} from "../models/board-models";
+import {boardCreateModel, boardInfoModel, boardUpdateModel} from "../models/board-models";
 const API_URL = "http://localhost:3001/board";
 
 export async function getBoards(){
@@ -34,5 +34,19 @@ export async function deleteBoard(boardId:string){
         console.error("Error deleting board:",error);
         throw error;
     }
-
 }
+export async function updateBoard(boardData: boardUpdateModel) {
+    try {
+        const response = await axios.put(`${API_URL}/update-board`,
+            { board: boardData },
+            { withCredentials: true }
+        );
+        return response;
+    } catch (error) {
+        console.error("Error updating board:", error);
+        throw error;
+    }
+}
+
+
+

@@ -14,3 +14,8 @@ export interface cardModel{
     cardDescription: string,
     cardTitle: string,
 }
+export interface cardUpdateModel {
+    cardID: string;
+    title: string;
+    description?: string;
+}

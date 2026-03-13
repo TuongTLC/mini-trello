@@ -1,5 +1,5 @@
 import axios from "axios";
-import {cardCreateModel} from "../models/card-models";
+import {cardCreateModel, cardUpdateModel} from "../models/card-models";
 const API_URL = "http://localhost:3001/card";
 
 export async function getCards(boardID: string){
@@ -35,4 +35,16 @@ export async function deleteCard(carId:string){
         throw error;
     }
 
+}
+export async function updateCard(cardData: cardUpdateModel) {
+    try {
+        const response = await axios.put(`${API_URL}/update-card`,
+            { card: cardData },
+            { withCredentials: true }
+        );
+        return response;
+    } catch (error) {
+        console.error("Error updating card:", error);
+        throw error;
+    }
 }
