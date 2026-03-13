@@ -7,7 +7,7 @@ import {boardCreateModel, boardInfoModel, boardUpdateModel} from "../../models/b
 import {createBoard, deleteBoard, getBoards, updateBoard} from "../../services/board-services";
 import {createCard, deleteCard, getCards, updateCard} from "../../services/card-services";
 import {cardInfoModel, cardCreateModel, cardUpdateModel} from "../../models/card-models";
-import {taskCreateModel, taskInfoModel, taskUpdateModel} from "../../models/task-models";
+import {assignee, taskCreateModel, taskInfoModel, taskUpdateModel} from "../../models/task-models";
 import {createTask, deleteTask, getTasks, updateTask} from "../../services/task-services";
 
 function Board() {
@@ -25,6 +25,7 @@ function Board() {
     const [cardNameErr, setCardNameErr] = useState("Add new card");
     const [selectedBoardId, setSelectedBoardId] = useState("");
     const [selectedCardId, setSelectedCardId] = useState("");
+    const [selectedTaskId, setSelectedTaskId] = useState("");
     const [cardsWithTasks, setCardsWithTasks] = useState<{card: cardInfoModel, tasks: taskInfoModel[]}[]>([]);
 
     const [currentCard, setCurrentCard] = useState("");
@@ -41,6 +42,7 @@ function Board() {
     const [boardEdit, setBoardEdit] = useState<boolean>(false);
     const [cardEdit, setCardEdit] = useState<boolean>(false);
     const [taskEdit, setTaskEdit] = useState<boolean>(false);
+    const [assignedTaskEdit, setAssignedTaskEdit] = useState<assignee[]>([]);
     const [boardEditModel, setBoardEditModel] = useState<boardUpdateModel>({
         boardID: '',
         boardName: ''
@@ -170,26 +172,37 @@ function Board() {
         }
     }
     const handleUpdateTask = async () => {
+        const taskUpdateData: taskUpdateModel = {
+            taskId: taskEditModel.taskId,
+            title: taskEditModel.title,
+            description: taskEditModel.description,
+            dueDate: taskEditModel.dueDate,
+            startDate: taskEditModel.startDate,
+            isComplete: taskEditModel.isComplete,
+            memberIds: assignedTaskEdit.map(assignee => assignee.uuid)
+        };
         try {
             if (!taskEditModel.taskId || !taskEditModel.title.trim()) {
                 console.error("Task ID and title are required");
                 return;
             }
-            await updateTask(taskEditModel);
+            await updateTask(taskUpdateData);
             setTaskEdit(false);
+            await fetchCards(selectedBoardId);
+            setAssignedTaskEdit([]);
+            setTaskEditModel({
+                taskId: '',
+                title: '',
+                description: '',
+                dueDate: '',
+                startDate: '',
+                isComplete: false
+            });
         } catch (error) {
             console.error("Failed to update task:", error);
         }
     };
 
-    const resetTaskEditModel = () => {
-        setTaskEditModel({
-            taskId: '',
-            title: '',
-            description: '',
-            isComplete: false
-        });
-    };
     const removeBoard = async (boardId: string) => {
         try {
             const response = await deleteBoard(boardId);
@@ -312,6 +325,35 @@ function Board() {
         return `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")} ` +
             `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
     }
+
+    const setTaskEditAssignee = (assignees: {[uuid: string]: assignee} | null | undefined) => {
+        if (!assignees) {
+            setAssignedTaskEdit([]);
+            return;
+        }
+        const assigneeArray = Object.values(assignees);
+        setAssignedTaskEdit(assigneeArray);
+    };
+    const addTaskEditAssignee = (assigneeID: string) => {
+        if (!assigneeID || assigneeID === "") return;
+
+        if (assignedTaskEdit.some(a => a.uuid === assigneeID)) return;
+
+        let selectedUser = userArray.find((user) => user.id === assigneeID);
+        if (selectedUser) {
+            const assignee = {
+                uuid: assigneeID,
+                name: selectedUser.name,
+            };
+            setAssignedTaskEdit(prev => [...prev, assignee]);
+        }
+    };
+    const removeTaskEditAssignee = (index: number) => {
+        const newAssignees = [...assignedTaskEdit];
+        newAssignees.splice(index, 1);
+        setAssignedTaskEdit(newAssignees);
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -419,7 +461,7 @@ function Board() {
                                 onChange={(e) => setBoardName(e.target.value)}
                                 placeholder="Enter board name..."
                             /><br/>
-                            <button onClick={createNewBoard}>Add</button>
+                            <button onClick={createNewBoard}>Add board</button>
                         </div>
                     </div>
                 </div>
@@ -436,7 +478,7 @@ function Board() {
                                onChange={(e) => setCardDescription(e.target.value)}
                                placeholder="Enter description..."/><br/>
 
-                        <button onClick={() => createNewCard(selectedBoardId)}>Add</button>
+                        <button onClick={() => createNewCard(selectedBoardId)}>Add card</button>
                     </div>
                     <>{cardsWithTasks?.map((cardWithTasks, i) => (
                         <div key={i} className="card-item">
@@ -478,29 +520,122 @@ function Board() {
                             }
                             {cardWithTasks.tasks.map((task, j) => (
                                 <div className="task-item" key={j}>
-                                    <div>
-                                        <button type="button" onClick={event => removeTask(task.taskId)}>Delete</button>
-                                        <button>Edit</button>
-                                    </div>
-                                    <div>
-                                        <h3>{task.title}</h3>
-                                    </div>
-                                    <p>{task.description}</p>
-                                    <div>
-                                        <strong>Start:</strong>
-                                        <p> {convertTime(task.startDate)}</p>
-                                        <strong>Due:</strong>
-                                        <p> {convertTime(task.dueDate)}</p>
-                                    </div>
-                                    <div>
-                                        <strong>Assigned to:</strong>
-                                        {Object.values(task.assignees || {}).map((member, k) => (
-                                            <p key={k}>{member.name}</p>
-                                        ))}
-                                    </div>
-                                    <div>
-                                        <strong>Status:</strong> {task.isComplete ? 'Complete' : 'Pending'}
-                                    </div>
+                                    {!taskEdit &&
+                                        <div>
+                                            <div>
+                                                <button type="button" onClick={event => removeTask(task.taskId)}>Delete</button>
+                                                <button onClick={()=> {setTaskEdit(true); setSelectedTaskId(task.taskId);setTaskEditAssignee(task.assignees); setTaskEditModel(
+                                                    {
+                                                        ...taskEditModel,
+                                                        taskId: task.taskId,
+                                                        title: task.title,
+                                                        description: task.description,
+                                                        dueDate: task.dueDate,
+                                                        startDate: task.startDate,
+                                                        isComplete: task.isComplete,
+
+                                                    }
+                                                )}}>Edit</button>
+                                            </div>
+                                            <div>
+                                                <h3>{task.title}</h3>
+                                            </div>
+                                            <p>{task.description}</p>
+                                            <div>
+                                                <strong>Start:</strong>
+                                                <p> {convertTime(task.startDate)}</p>
+                                                <strong>Due:</strong>
+                                                <p> {convertTime(task.dueDate)}</p>
+                                            </div>
+                                            <div>
+                                                <strong>Assigned to:</strong>
+                                                {Object.values(task.assignees || {}).map((member, k) => (
+                                                    <p key={k}>{member.name}</p>
+                                                ))}
+                                            </div>
+                                            <div>
+                                                <strong>Status:</strong> {task.isComplete ? 'Complete' : 'Pending'}
+                                            </div>
+                                        </div>
+                                    }
+                                    {taskEdit &&
+                                        <div>
+                                            <div>
+                                                <button onClick={event => setTaskEdit(false)}>Cancel</button>
+                                                <button onClick={()=> handleUpdateTask()}>Save</button>
+                                            </div>
+                                            <div>
+                                                <p>Title:</p>
+                                                <input
+                                                    type="text"
+                                                    value={taskEditModel.title}
+                                                    onChange={(e) => setTaskEditModel({
+                                                        ...taskEditModel,
+                                                        title: e.target.value
+                                                    })}/>
+                                            </div>
+                                            <div>
+                                                <p>Description:</p>
+                                                <input
+                                                    type="text"
+                                                    value={taskEditModel.description}
+                                                    onChange={(e) => setTaskEditModel({
+                                                        ...taskEditModel,
+                                                        description: e.target.value
+                                                    })}/>
+                                            </div>
+                                            <div>
+                                                <label>Start Date: </label><br/>
+                                                <input
+                                                    type="datetime-local"
+                                                    onChange={(e) => setTaskEditModel({
+                                                        ...taskEditModel,
+                                                        startDate: e.target.value
+                                                    })}
+                                                    value={taskEditModel.startDate}
+                                                    className="icon-only-picker"/><br/>
+
+                                                <label>Due Date: </label><br/>
+                                                <input
+                                                    type="datetime-local"
+                                                    onChange={(e) => setTaskEditModel({
+                                                        ...taskEditModel,
+                                                        dueDate: e.target.value
+                                                    })}
+                                                    min={startDate}
+                                                    value={taskEditModel.dueDate}
+                                                    className="icon-only-picker"/><br/>
+                                            </div>
+                                            <div>
+                                                <label>Assigned to: </label><br/>
+                                                <select onChange={(e) => addTaskEditAssignee(e.target.value)}>
+                                                    <option value="">-Select-</option>
+                                                    {userArray?.map((item, index) => (
+                                                        <option key={index} value={item.id}>{item.name}</option>
+                                                    ))}
+                                                </select>
+
+                                                {assignedTaskEdit.map((assignee, index) => (
+                                                    <p key={index}>
+                                                        {assignee.name}
+                                                        <button onClick={() => removeTaskEditAssignee(index)}>X</button>
+                                                    </p>
+                                                ))}
+
+                                            </div>
+                                            <div>
+                                                <label>Complete:</label>
+                                                <input
+                                                    type={"checkbox"}
+                                                    checked={taskEditModel.isComplete}
+                                                    onChange={(e) => setTaskEditModel({
+                                                        ...taskEditModel,
+                                                        isComplete: e.target.checked
+                                                    })}
+                                                ></input>
+                                            </div>
+                                        </div>
+                                    }
                                 </div>
                             ))}
                             {currentCard === cardWithTasks.card.cardID ? (
@@ -592,9 +727,7 @@ function Board() {
                                     </form>
                                 </div>
                             ) : (
-                                <div>
-                                    <button onClick={event => setCurrentCard(cardWithTasks.card.cardID)}>Add</button>
-                                </div>
+                                    <button className="addTaskBtn" onClick={event => setCurrentCard(cardWithTasks.card.cardID)}>Add task</button>
                             )}
                         </div>
                     ))}

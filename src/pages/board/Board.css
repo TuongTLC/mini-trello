@@ -104,7 +104,7 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-weight: bold;
     margin: 10px;
-    background-color: white;
+    background-color: lightskyblue;
     border-radius: 5px;
 }
 
@@ -247,7 +247,9 @@
     margin: 3px;
     padding: 2px;
 }
-
+.addTaskBtn{
+    font-weight: bold;
+}
 
 
 
