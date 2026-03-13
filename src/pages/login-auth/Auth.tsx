@@ -1,4 +1,4 @@
-import "./auth.css";
+import "./Auth.css";
 import { useState } from "react";
 import { AxiosError } from "axios";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
