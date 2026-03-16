@@ -50,6 +50,7 @@ function Login() {
     <div className="login-page">
       <div className="login-container">
         <h1>Welcome to Mini Trello</h1>
+        <p>Website under development</p>
         <p>Please log in to continue.</p>
         <input
           type="text"

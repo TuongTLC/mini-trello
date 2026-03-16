@@ -405,7 +405,6 @@ function Board() {
                 </div>
                 <div className="user-pane">
                     <p className="user-name">{user.name}</p>
-                    <img className="user-pane-img" src={"src/assets/avatar.png"} alt="avatar"/>
                     <button className="logoutBtn" onClick={handleLogout}>Log out</button>
                 </div>
             </div>
