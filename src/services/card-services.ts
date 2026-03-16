@@ -1,6 +1,7 @@
 import axios from "axios";
 import {cardCreateModel, cardUpdateModel} from "../models/card-models";
-const API_URL = "http://localhost:3001/card";
+import { API_ENDPOINTS } from "./api-config";
+const API_URL = API_ENDPOINTS.card;
 
 export async function getCards(boardID: string){
     try{

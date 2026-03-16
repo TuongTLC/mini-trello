@@ -1,7 +1,8 @@
 import axios from "axios";
 import {userAuthModel, userRegisterModel} from "../models/user-models";
+import { API_ENDPOINTS } from "./api-config";
 
-const API_URL = "http://localhost:3001/user";
+const API_URL = API_ENDPOINTS.user;
 
 export async function userRegister(user :userRegisterModel) {
     try {

@@ -1,6 +1,7 @@
 import axios from "axios";
 import {boardCreateModel, boardInfoModel, boardUpdateModel} from "../models/board-models";
-const API_URL = "http://localhost:3001/board";
+import { API_ENDPOINTS } from "./api-config";
+const API_URL = API_ENDPOINTS.board;
 
 export async function getBoards(){
     try{

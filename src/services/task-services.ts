@@ -1,6 +1,7 @@
 import axios from "axios";
 import {taskCreateModel, taskUpdateModel} from "../models/task-models";
-const API_URL = "http://localhost:3001/task";
+import { API_ENDPOINTS } from "./api-config";
+const API_URL = API_ENDPOINTS.task;
 
 export async function getTasks(cardID: string){
     try{
